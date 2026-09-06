@@ -1,10 +1,10 @@
 {
   "meta": {
     "date": "2026-09-06",
-    "fetch_time": "16:24:19",
-    "market_open": false,
-    "open_reason": "周末休市",
-    "force": false
+    "fetch_time": "16:27:46",
+    "market_open": true,
+    "open_reason": "强制生成(忽略休市判断)",
+    "force": true
   },
   "reserve_fund": 70000,
   "goal": "回本退场",
