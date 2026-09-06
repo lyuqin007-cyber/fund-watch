@@ -1,0 +1,46 @@
+{
+  "reserve_fund": 70000,
+  "goal": "回本退场",
+  "funds": [
+    {
+      "code": "020477",
+      "name": "泰康半导体量化选股股票发起式C",
+      "invested": 175000,
+      "shares": 52435.48,
+      "cost_nav": null,
+      "board_etf_secid": "1.512480",
+      "danjuan_index": "CSI930652",
+      "note": "半导体(主动量化)"
+    },
+    {
+      "code": "016467",
+      "name": "国泰海通量化选股混合发起C",
+      "invested": 30000,
+      "shares": 19043.57,
+      "cost_nav": null,
+      "board_etf_secid": "1.000300",
+      "danjuan_index": "SH000300",
+      "note": "宽基量化"
+    },
+    {
+      "code": "027208",
+      "name": "路博迈卓越优选混合C",
+      "invested": 20000,
+      "shares": 20005.44,
+      "cost_nav": null,
+      "board_etf_secid": "1.000300",
+      "danjuan_index": "SH000300",
+      "note": "主动混合"
+    },
+    {
+      "code": "019702",
+      "name": "易方达上证科创板成长ETF联接发起式A",
+      "invested": 20400,
+      "shares": 5583.81,
+      "cost_nav": null,
+      "board_etf_secid": "1.588000",
+      "danjuan_index": "SH000688",
+      "note": "科创板成长"
+    }
+  ]
+}

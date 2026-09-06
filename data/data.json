@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "date": "2026-09-06",
+    "fetch_time": "15:22:53",
+    "market_open": true,
+    "open_reason": "强制生成(忽略休市判断)",
+    "force": true
+  },
+  "reserve_fund": 70000,
+  "goal": "回本退场",
+  "board": {
+    "1.000001": {
+      "name": "上证指数",
+      "price": 3930.12,
+      "pct": -0.3,
+      "ts": 1788509492
+    },
+    "1.000300": {
+      "name": "沪深300",
+      "price": 4548.05,
+      "pct": -0.1,
+      "ts": 1788509504
+    },
+    "0.399006": {
+      "name": "创业板指",
+      "price": 3286.55,
+      "pct": -0.78,
+      "ts": 1788509466
+    },
+    "1.512480": {
+      "name": "半导体ETF国联安",
+      "price": 0.976,
+      "pct": -2.79,
+      "ts": 1788509497
+    },
+    "1.588000": {
+      "name": "科创50ETF华夏",
+      "price": 1.668,
+      "pct": -2.06,
+      "ts": 1788509518
+    }
+  },
+  "funds": [
+    {
+      "code": "020477",
+      "name": "泰康半导体量化选股股票发起式C",
+      "latest_nav": 3.0013,
+      "latest_acc": 3.0013,
+      "latest_date": "2026-09-04",
+      "source": "东方财富",
+      "shares": 52435.48,
+      "cost_nav": 3.3374,
+      "invested": 175000,
+      "market_value": 157374.61,
+      "profit_pct": -10.07,
+      "to_breakeven_pct": 11.2,
+      "profit_acc_pct": -10.07,
+      "est_pct": -2.79,
+      "board_name": "半导体ETF国联安",
+      "est_method": "板块ETF实时涨跌",
+      "trend_5d": -4.47,
+      "trend_20d": -8.59,
+      "trend_60d": -4.98,
+      "eva": {
+        "index": "CSI930652",
+        "index_name": "中证电子",
+        "pe_percentile": 0.7444,
+        "pb_percentile": 0.9656,
+        "level": "偏高估"
+      }
+    },
+    {
+      "code": "016467",
+      "name": "国泰海通量化选股混合发起C",
+      "latest_nav": 1.5622,
+      "latest_acc": 1.5622,
+      "latest_date": "2026-09-04",
+      "source": "东方财富",
+      "shares": 19043.57,
+      "cost_nav": 1.5753,
+      "invested": 30000,
+      "market_value": 29749.87,
+      "profit_pct": -0.83,
+      "to_breakeven_pct": 0.84,
+      "profit_acc_pct": -0.83,
+      "est_pct": -0.1,
+      "board_name": "沪深300",
+      "est_method": "板块ETF实时涨跌",
+      "trend_5d": -1.73,
+      "trend_20d": -1.46,
+      "trend_60d": -5.13,
+      "eva": {
+        "index": "SH000300",
+        "index_name": "沪深300",
+        "pe_percentile": 0.6972,
+        "pb_percentile": 0.4324,
+        "level": "偏高估"
+      }
+    },
+    {
+      "code": "027208",
+      "name": "路博迈卓越优选混合C",
+      "latest_nav": 0.9042,
+      "latest_acc": 0.9042,
+      "latest_date": "2026-09-04",
+      "source": "东方财富",
+      "shares": 20005.44,
+      "cost_nav": 0.9997,
+      "invested": 20000,
+      "market_value": 18088.92,
+      "profit_pct": -9.56,
+      "to_breakeven_pct": 10.56,
+      "profit_acc_pct": -9.56,
+      "est_pct": -0.1,
+      "board_name": "沪深300",
+      "est_method": "板块ETF实时涨跌",
+      "trend_5d": -2.06,
+      "trend_20d": 2.46,
+      "trend_60d": null,
+      "eva": {
+        "index": "SH000300",
+        "index_name": "沪深300",
+        "pe_percentile": 0.6972,
+        "pb_percentile": 0.4324,
+        "level": "偏高估"
+      }
+    },
+    {
+      "code": "019702",
+      "name": "易方达上证科创板成长ETF联接发起式A",
+      "latest_nav": 2.6338,
+      "latest_acc": 2.6338,
+      "latest_date": "2026-09-04",
+      "source": "东方财富",
+      "shares": 5583.81,
+      "cost_nav": 3.6534,
+      "invested": 20400,
+      "market_value": 14706.64,
+      "profit_pct": -27.91,
+      "to_breakeven_pct": 38.71,
+      "profit_acc_pct": -27.91,
+      "est_pct": -2.06,
+      "board_name": "科创50ETF华夏",
+      "est_method": "板块ETF实时涨跌",
+      "trend_5d": -5.18,
+      "trend_20d": -4.22,
+      "trend_60d": -10.64,
+      "eva": {
+        "index": "SH000688",
+        "index_name": "科创50",
+        "pe_percentile": 0.8051,
+        "pb_percentile": 0.8489,
+        "level": "极度高估"
+      }
+    }
+  ],
+  "warnings": []
+}
