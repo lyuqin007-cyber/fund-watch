@@ -393,7 +393,7 @@ def build_fund_entry(f, board, eva, warnings):
 # ---------------- 主流程 ----------------
 def main():
     force = (sys.argv[1] == "--force" if len(sys.argv) > 1 else False) \
-        or os.environ.get("FORCE") == "1"
+        or os.environ.get("FORCE", "").strip().lower() in ("1", "true", "yes")
     warnings = []
     cfg = json.loads(FUNDS_CFG_PATH.read_text(encoding="utf-8"))
 
