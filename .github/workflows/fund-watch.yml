@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC 06:45 = 北京时间 14:45（中国无夏令时，固定+8）。
     # 提前于15:00收盘5分钟留出 GitHub 排队延迟缓冲。
-    - cron: '45 6 * * 1-5'
+    - cron: '50 8 * * *'   # 【临时测试】改回：45 6 * * 1-5
   workflow_dispatch:
     inputs:
       force:
