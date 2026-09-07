@@ -244,6 +244,11 @@ def extract_topic(report):
     """提取小课堂主题标记并删除标记行，返回 (清理后的报告, 主题名)"""
     m = re.search(r"<!--TOPIC:(.*?)-->", report, re.S)
     topic = m.group(1).strip() if m else ""
+    if not topic:
+        # 兜底：AI 偶尔漏掉标记，从小课堂标题里提取，保证主题轮换不失效
+        m2 = re.search(r"今日小课堂[：:]\s*(.+)", report)
+        if m2:
+            topic = m2.group(1).strip().split("\n")[0][:30]
     cleaned = re.sub(r"<!--TOPIC:(.*?)-->", "", report, flags=re.S).strip()
     return cleaned, topic
 
@@ -281,7 +286,15 @@ def main():
     meta = data["meta"]
     today = datetime.now(TZ_SH).strftime("%Y-%m-%d")
 
-    if not meta.get("market_open") and not (args.force or meta.get("force")):
+    force_flag = args.force or bool(meta.get("force"))
+
+    # 防重复：云端运行且当天报告已存在 → 跳过（定时排队/补跑时避免重复推送、重复花 AI 费用）
+    if os.environ.get("GITHUB_ACTIONS") and not force_flag \
+            and (REPORTS_DIR / f"{today}.md").exists():
+        print(f"今日报告已存在（{today}.md），云端自动跳过，避免重复推送。")
+        sys.exit(0)
+
+    if not meta.get("market_open") and not force_flag:
         print(f"今日休市（{meta.get('open_reason')}），跳过报告。"
               "如需强制生成：analyze.py --force")
         sys.exit(0)

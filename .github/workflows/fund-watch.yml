@@ -2,9 +2,9 @@ name: Fund Watch Daily Report
 
 on:
   schedule:
-    # UTC 06:45 = 北京时间 14:45（中国无夏令时，固定+8）。
-    # 提前于15:00收盘5分钟留出 GitHub 排队延迟缓冲。
-    - cron: '45 6 * * 1-5'
+    # UTC 06:20 = 北京时间 14:20（中国无夏令时，固定+8）。
+    # 提前于15:00收盘40分钟，留出 GitHub 排队延迟缓冲（定时任务可能延迟数分钟~数小时）。
+    - cron: '20 6 * * 1-5'
   workflow_dispatch:
     inputs:
       force:
