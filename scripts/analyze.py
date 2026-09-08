@@ -132,26 +132,30 @@ def call_ai(system, user):
     import anthropic
     client = anthropic.Anthropic(timeout=60.0, max_retries=3)
     last_text = ""
-    for attempt in range(3):          # 部分代理通道偶发返回空内容：整体重试3次
+    for attempt in range(4):          # 代理偶发断连/空内容：整体重试4次，逐次延长等待
         for max_tokens in (2500, 4000):   # 若截断，加大上限再试一次
-            resp = client.messages.create(
-                model=MODEL,
-                max_tokens=max_tokens,
-                system=system,
-                messages=[{"role": "user", "content": user}],
-                output_config={"effort": "medium"},
-            )
+            try:
+                resp = client.messages.create(
+                    model=MODEL,
+                    max_tokens=max_tokens,
+                    system=system,
+                    messages=[{"role": "user", "content": user}],
+                    output_config={"effort": "medium"},
+                )
+            except Exception:
+                time.sleep(2)
+                continue              # 连接错误等：不直接放弃，换下一轮重试
             text = "".join(block.text for block in resp.content if block.type == "text")
             if text.strip():
                 last_text = text
             if resp.stop_reason != "max_tokens":
                 if text.strip():
                     return text
-                break                # 空内容：等2秒后整体重试
-        time.sleep(2)
+                break                # 空内容：等待后整体重试
+        time.sleep(2 + 3 * attempt)
     if last_text.strip():
         return last_text
-    raise RuntimeError("AI 返回空内容（已重试3次）")
+    raise RuntimeError("AI 返回空内容（已重试4次）")
 
 
 def generate_report(data, dry_run=False):
@@ -175,6 +179,16 @@ def generate_report(data, dry_run=False):
 
 
 # ---------------- 纯规则兜底报告 ----------------
+# AI 不可用时兜底小课堂的预置讲义（按日期轮换，AI 恢复后自动恢复现场教学）
+FALLBACK_LESSONS = [
+    "什么是基金净值？净值就是每份基金值多少钱（基金总资产÷总份额）。你持有的钱=份额×最新净值，它每天收盘后才更新，白天看到的\"估算涨跌\"只是近似值。好比一筐苹果：筐里苹果总价÷苹果个数=每个苹果的单价，单价变了你的总钱数才变。",
+    "什么是PE历史分位？PE（市盈率）是股票价格÷每股盈利，衡量\"贵不贵\"。分位60%的意思是：过去十年里只有40%的时间比现在更贵。它说的是\"价值\"，不是明天的涨跌——西瓜贵不代表明天没人买，只说明你现在进货不划算。",
+    "为什么用金字塔补仓？金字塔补仓=越跌越买、每跌一档买一份，而不是一次把钱打光。因为没人知道底在哪，分批买能让你的平均成本一路摊低，即使继续跌，损失也被控制住。好比打折季：5折买一件、4折再买一件，比第一天就把钱花光聪明。",
+    "为什么要分批止盈？一次性全卖可能卖在启动点，分批卖则是\"涨了卖一点、再涨再卖一点\"，既锁定利润又不错过后续上涨。好比煮饺子：尝一个熟了捞一个，而不是把整锅全捞出来等它凉。",
+    "为什么半导体基金波动这么大？半导体行业受\"芯片周期\"影响：下游需求火爆时涨价扩产，供过于求时降价减产，业绩像过山车。所以你看到的±30%波动，是这个品种的\"性格\"，不是系统坏了。好比冲浪板：浪越大越刺激，但也要抱得稳。",
+]
+
+
 def fallback_report(data, ai_error):
     """AI 不可用时的兜底：直接用策略规则算出信号，附免责声明"""
     date_str = data["meta"]["date"]
@@ -184,7 +198,7 @@ def fallback_report(data, ai_error):
         "> 本报告由程序自动生成，仅供参考，不构成投资建议。"
         "若您在15:00后才收到本报告，操作建议作废，请勿据此交易。",
         f"> ⚠️ 今日 AI 分析服务暂不可用（{ai_error}），以下为按规则自动计算的信号，"
-        "缺少讲解部分，恢复后恢复正常。",
+        "小课堂为预置讲义。AI 恢复后自动恢复正常报告。",
         "",
         "## 持仓一览",
     ]
@@ -205,14 +219,20 @@ def fallback_report(data, ai_error):
             continue
         name = f.get("name") or f["code"]
         signal, money = rule_signal(f, layer_money)
-        lines.append(f"- **{name}** → {signal}")
+        line = f"- **{name}** → {signal}"
+        if money:
+            line += f"，建议金额 {money} 元"
+        elif f.get("market_value") and signal.startswith(("止盈提醒", "已回本")):
+            line += f"（当前市值约 {round(f['market_value'])} 元，若止盈每批约 {round(f['market_value'] / 3)} 元）"
+        lines.append(line)
         total += money
     if total:
         lines.append(f"\n今日建议动用资金合计：{total} 元（来自预留补仓资金的规则分层）")
+    idx = datetime.now(TZ_SH).timetuple().tm_yday % len(FALLBACK_LESSONS)
     lines += [
         "",
         "## 今日小课堂",
-        "（AI 服务恢复后恢复此栏目）",
+        FALLBACK_LESSONS[idx],
         "",
         "---",
         "本报告由程序自动生成，仅供参考，不构成投资建议。",
@@ -221,21 +241,22 @@ def fallback_report(data, ai_error):
 
 
 def rule_signal(f, layer_money):
-    """与 prompt_template.md 的策略规则保持一致的纯规则判断，返回 (信号文本, 建议金额)"""
+    """与 prompt_template.md 的策略规则保持一致的纯规则判断，返回 (信号文本, 建议金额)。
+    口径（用户拍板）：回本不自动减仓，+5%才提醒止盈；PE>80%且深亏不喊减仓（不割肉）。"""
     profit_acc = f.get("profit_acc_pct")
     drop = -f.get("profit_pct") if f.get("profit_pct") is not None else None
     pe = (f.get("eva") or {}).get("pe_percentile")
+    if profit_acc is not None and profit_acc >= 5:
+        return f"止盈提醒：含分红口径收益已达 +{round(profit_acc, 1)}%，可考虑分批止盈（分3次、每次约1/3）", 0
     if profit_acc is not None and profit_acc >= 0:
-        return "减仓：已回本（含分红口径），建议分批止盈退场", 0
-    if pe is not None and pe > 0.8:
-        return "减仓：对应指数PE分位>80%，估值偏高，控制风险", 0
+        return "已回本：按你的选择继续持有；若涨幅达到 +5%，再提醒考虑分批止盈", 0
     if drop is not None:
         threshold = 15 if pe is not None else 20     # 估值缺失时保守化
         if drop >= threshold and (pe is None or pe < 0.3):
             layer = min(5, int((drop - 15) // 5) + 1)
             return f"补仓：跌幅 {round(drop, 1)}% 达到规则阈值，建议执行第{layer}层", layer_money
         if drop >= 15 and pe is not None and pe >= 0.3:
-            return "观望：跌幅到位但估值分位仍偏高，按规则暂缓补仓", 0
+            return "暂缓补仓：跌幅到位但估值分位仍偏高；深亏不割肉，等估值回落", 0
     return "持有：未触发规则，等待信号", 0
 
 
