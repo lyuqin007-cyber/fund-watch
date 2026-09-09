@@ -3,7 +3,8 @@ name: Fund Watch Daily Report
 on:
   schedule:
     # UTC 06:20 = 北京时间 14:20（中国无夏令时，固定+8）。
-    # 提前于15:00收盘40分钟，留出 GitHub 排队延迟缓冲（定时任务可能延迟数分钟~数小时）。
+    # 备份触发：主触发为外部闹钟 cron-job.org 14:10（更准时）；
+    # 防重复开关保证双触发不会重复推送、重复花 AI 费用。
     - cron: '20 6 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -25,10 +26,8 @@ jobs:
     timeout-minutes: 15
     env:
       TZ: Asia/Shanghai
-      # AI 通道：当前用代理（方案A）；以后若换 Anthropic 官方，改配 ANTHROPIC_API_KEY 即可
+      # AI 通道：Anthropic 官方 API（本地开发可自行设代理环境变量，云端不受影响）
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
-      ANTHROPIC_AUTH_TOKEN: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
       PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
       FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
     steps:
@@ -49,4 +48,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/ data/ || true
           git commit -m "daily report $(date +%F)" || echo "no changes to commit"
-          git push
+          # 推送带重试：网络偶发抽风时退避重试（先同步远端，防竞态）
+          for i in 1 2 3; do
+            git fetch origin && git rebase FETCH_HEAD && git push && break
+            echo "推送失败第${i}次，10秒后重试"
+            sleep 10
+          done

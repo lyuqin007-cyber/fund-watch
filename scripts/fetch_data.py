@@ -418,6 +418,7 @@ def main():
         },
         "reserve_fund": cfg.get("reserve_fund"),
         "goal": cfg.get("goal"),
+        "spare_cash_note": cfg.get("spare_cash_note"),
         "board": board,
         "funds": funds_data,
         "warnings": warnings,

@@ -59,6 +59,8 @@ def build_system_prompt(data):
         "{GOAL}": str(data.get("goal") or "回本退场"),
         "{RESERVE_FUND}": str(data.get("reserve_fund") or "未配置"),
         "{DATE}": data["meta"]["date"],
+        "{DATA_TIME}": str(data["meta"].get("fetch_time") or "14:10")[:5],
+        "{SPARE_CASH_NOTE}": str(data.get("spare_cash_note") or "未配置"),
     }
     for key, value in replacements.items():
         template = template.replace(key, value)
@@ -90,6 +92,8 @@ def build_user_prompt(data):
             parts.append(f"今日估算涨跌 {f['est_pct']}%（据{f.get('board_name')}）")
         else:
             parts.append("今日估算涨跌：缺失")
+        if f.get("market_value") is not None and f.get("invested") is not None:
+            parts.append(f"市值 {round(f['market_value'])} 元（总投入 {f['invested']} 元）")
         if f.get("profit_pct") is not None:
             parts.append(f"累计收益率 {f['profit_pct']}%")
             parts.append(f"距回本还需涨 {f['to_breakeven_pct']}%")
@@ -179,6 +183,29 @@ def generate_report(data, dry_run=False):
 
 
 # ---------------- 纯规则兜底报告 ----------------
+# 兜底报告的自查三问（与 prompt_template.md 自查清单库口径一致）
+CHECKLISTS = {
+    "止盈类": ["卖完它继续涨，我会难受吗？（会难受就分3批，别一次卖光）",
+               "卖出的钱有没有低风险去处？（没有的话见闲钱去哪）",
+               "分批的节奏要不要按自己的用钱安排微调？"],
+    "补仓类": ["补仓动用这笔钱，会不会影响生意周转？（会就不补或少补）",
+               "补完这层如果继续跌5%，我还拿得住吗？（拿不住说明补多了）",
+               "补完后它占我总仓位的比例我能接受吗？"],
+    "割肉类": ["钱急用吗？", "我还信这个品种吗？", "有更好的去处吗？"],
+    "持有类": ["当初买它的理由变了吗？（没变就继续拿）",
+               "这笔钱不急用吧？（不急用才有资格等）",
+               "我能不能管住手、不天天看？（天天看容易冲动操作）"],
+}
+
+# 兜底报告的闲钱去处（与 prompt_template.md 第五节口径一致）
+SPARE_CASH_FALLBACK = (
+    "货币基金：像活期加强版，随存随取，收益比银行活期高一点；"
+    "短债基金：波动极小，偶尔也会小亏几天；"
+    "同业存单指数基金：风险介于前两者之间。"
+    "注意：它们都不保本、收益跑不赢股票基金，作用是让钱歇脚。"
+    "补仓信号触发时，从这里面取钱即可，不影响生意周转。"
+)
+
 # AI 不可用时兜底小课堂的预置讲义（按日期轮换，AI 恢复后自动恢复现场教学）
 FALLBACK_LESSONS = [
     "什么是基金净值？净值就是每份基金值多少钱（基金总资产÷总份额）。你持有的钱=份额×最新净值，它每天收盘后才更新，白天看到的\"估算涨跌\"只是近似值。好比一筐苹果：筐里苹果总价÷苹果个数=每个苹果的单价，单价变了你的总钱数才变。",
@@ -190,7 +217,7 @@ FALLBACK_LESSONS = [
 
 
 def fallback_report(data, ai_error):
-    """AI 不可用时的兜底：直接用策略规则算出信号，附免责声明"""
+    """AI 不可用时的兜底：规则信号+大白话理由+决策三问，附免责声明"""
     date_str = data["meta"]["date"]
     lines = [
         f"# 📈 基金盯盘 · {date_str}（简易版）",
@@ -209,25 +236,39 @@ def fallback_report(data, ai_error):
         name = f.get("name") or f["code"]
         est = f.get("est_pct")
         est_txt = f"{est}%（估算）" if est is not None else "缺失"
-        lines.append(f"- **{name}**（{f['code']}）：今日估算 {est_txt}，最新净值 {f['latest_nav']}")
+        line = f"- **{name}**（{f['code']}）：今日估算 {est_txt}，最新净值 {f['latest_nav']}"
+        if f.get("market_value") is not None and f.get("invested") is not None:
+            line += f"｜市值 {round(f['market_value'])} 元（今天全卖掉能拿回的钱）/ 总投入 {f['invested']} 元"
+        lines.append(line)
     lines += ["", "## 规则信号"]
     total = 0
     reserve = data.get("reserve_fund") or 0
     layer_money = round(reserve / 5, 2) if reserve else 0
+    has_profit_signal = False
     for f in data.get("funds", []):
         if f.get("missing"):
             continue
         name = f.get("name") or f["code"]
-        signal, money = rule_signal(f, layer_money)
-        line = f"- **{name}** → {signal}"
+        sig_type, rule_no, text, reason, ck_type, money = rule_signal(f, layer_money)
+        line = f"- **{name}** → {text}（按{rule_no}）"
         if money:
             line += f"，建议金额 {money} 元"
-        elif f.get("market_value") and signal.startswith(("止盈提醒", "已回本")):
+        elif sig_type in ("止盈", "回本") and f.get("market_value"):
             line += f"（当前市值约 {round(f['market_value'])} 元，若止盈每批约 {round(f['market_value'] / 3)} 元）"
+            has_profit_signal = True
         lines.append(line)
+        lines.append(f"  - 为什么：{reason}")
+        lines.append("  - 怎么判断要不要照做：")
+        for i, q in enumerate(CHECKLISTS.get(ck_type, CHECKLISTS["持有类"]), 1):
+            lines.append(f"    {i}. {q}")
         total += money
     if total:
         lines.append(f"\n今日建议动用资金合计：{total} 元（来自预留补仓资金的规则分层）")
+    spare_note = data.get("spare_cash_note")
+    if spare_note or has_profit_signal:
+        lines += ["", "## 闲钱去哪（赎回后的钱/备用金）", SPARE_CASH_FALLBACK]
+        if spare_note:
+            lines.append(f"你的备注：{spare_note}")
     idx = datetime.now(TZ_SH).timetuple().tm_yday % len(FALLBACK_LESSONS)
     lines += [
         "",
@@ -241,23 +282,41 @@ def fallback_report(data, ai_error):
 
 
 def rule_signal(f, layer_money):
-    """与 prompt_template.md 的策略规则保持一致的纯规则判断，返回 (信号文本, 建议金额)。
+    """与 prompt_template.md 的策略规则保持一致的纯规则判断。
+    返回 (信号类型, 规则编号, 信号文本, 理由, 三问类型, 建议金额)。
     口径（用户拍板）：回本不自动减仓，+5%才提醒止盈；PE>80%且深亏不喊减仓（不割肉）。"""
     profit_acc = f.get("profit_acc_pct")
     drop = -f.get("profit_pct") if f.get("profit_pct") is not None else None
     pe = (f.get("eva") or {}).get("pe_percentile")
     if profit_acc is not None and profit_acc >= 5:
-        return f"止盈提醒：含分红口径收益已达 +{round(profit_acc, 1)}%，可考虑分批止盈（分3次、每次约1/3）", 0
+        return ("止盈", "规则2",
+                f"止盈提醒：含分红口径收益已达 +{round(profit_acc, 1)}%，可考虑分批止盈（分3次、每次约1/3）",
+                "收益达到你拍板的止盈线+5%；分3批卖是为了既锁定利润、又不踏空后面的上涨。",
+                "止盈类", 0)
     if profit_acc is not None and profit_acc >= 0:
-        return "已回本：按你的选择继续持有；若涨幅达到 +5%，再提醒考虑分批止盈", 0
+        return ("回本", "规则2", "已回本：按你的选择继续持有",
+                "已经回本，按你拍板的口径不自动减仓，等涨到+5%再提醒分批止盈。",
+                "持有类", 0)
     if drop is not None:
         threshold = 15 if pe is not None else 20     # 估值缺失时保守化
         if drop >= threshold and (pe is None or pe < 0.3):
             layer = min(5, int((drop - 15) // 5) + 1)
-            return f"补仓：跌幅 {round(drop, 1)}% 达到规则阈值，建议执行第{layer}层", layer_money
+            if pe is None:
+                reason = f"估值数据缺失，按保守口径跌幅≥20%才补仓；距成本跌幅 {round(drop, 1)}% 已达标，执行第{layer}层。"
+            else:
+                reason = (f"距成本跌幅 {round(drop, 1)}%≥15%、指数PE分位 {round(pe * 100, 1)}%<30%，"
+                          "两个条件同时满足，按金字塔分层执行；分层是为了不一次把钱打光。")
+            return ("补仓", "规则1",
+                    f"补仓：跌幅 {round(drop, 1)}% 达到规则阈值，建议执行第{layer}层",
+                    reason, "补仓类", layer_money)
         if drop >= 15 and pe is not None and pe >= 0.3:
-            return "暂缓补仓：跌幅到位但估值分位仍偏高；深亏不割肉，等估值回落", 0
-    return "持有：未触发规则，等待信号", 0
+            return ("暂缓", "规则1", "暂缓补仓：跌幅到位但估值分位仍偏高",
+                    f"跌幅已到位，但估值分位还有 {round(pe * 100, 1)}%，估值偏高时补仓等于“贵的时候进货”；"
+                    "深亏不割肉，等估值回落。若你在考虑割肉离场，先过下面三问。",
+                    "割肉类", 0)
+    return ("持有", "规则3", "持有：未触发规则，等待信号",
+            "没有触发规则1/2的条件，按规则继续持有，等补仓线或止盈线的信号。",
+            "持有类", 0)
 
 
 # ---------------- 推送与存档 ----------------
