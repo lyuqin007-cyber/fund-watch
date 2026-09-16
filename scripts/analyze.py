@@ -131,12 +131,18 @@ def build_user_prompt(data):
 
 
 # ---------------- AI 调用 ----------------
+def report_complete(text):
+    """结构完整性检查：必须含小课堂且以免责声明结尾（防代理截断）"""
+    return ("今日小课堂" in text
+            and text.rstrip().endswith("本报告由程序自动生成，仅供参考，不构成投资建议。"))
+
+
 def call_ai(system, user):
     """调用 Claude Sonnet 5。注意：不传 temperature、不用 prefill（会报400）"""
     import anthropic
     client = anthropic.Anthropic(timeout=60.0, max_retries=3)
     last_text = ""
-    for attempt in range(4):          # 代理偶发断连/空内容：整体重试4次，逐次延长等待
+    for attempt in range(4):          # 代理偶发断连/截断：整体重试4次，逐次延长等待
         for max_tokens in (2500, 4000):   # 若截断，加大上限再试一次
             try:
                 resp = client.messages.create(
@@ -153,13 +159,13 @@ def call_ai(system, user):
             if text.strip():
                 last_text = text
             if resp.stop_reason != "max_tokens":
-                if text.strip():
+                if text.strip() and report_complete(text):
                     return text
-                break                # 空内容：等待后整体重试
+                break                # 空内容/不完整：等待后整体重试
         time.sleep(2 + 3 * attempt)
-    if last_text.strip():
+    if last_text.strip() and report_complete(last_text):
         return last_text
-    raise RuntimeError("AI 返回空内容（已重试4次）")
+    raise RuntimeError("AI 返回空内容或内容不完整（疑似截断），已重试4次")
 
 
 def generate_report(data, dry_run=False):
@@ -404,7 +410,7 @@ def main():
 
     # 存档
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    report_path = REPORTS_DIR / f"{today}.md"
+    report_path = REPORTS_DIR / f"{meta['date']}.md"
     report_path.write_text(report, encoding="utf-8")
     print(f"[存档] 报告已写入 {report_path}")
 

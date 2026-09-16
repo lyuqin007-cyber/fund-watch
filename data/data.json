@@ -1,7 +1,7 @@
 {
   "meta": {
-    "date": "2026-09-15",
-    "fetch_time": "19:54:27",
+    "date": "2026-09-16",
+    "fetch_time": "14:05:11",
     "market_open": true,
     "open_reason": "开市",
     "force": false
@@ -12,33 +12,33 @@
   "board": {
     "1.000001": {
       "name": "上证指数",
-      "price": 3864.28,
-      "pct": -0.54,
-      "ts": 1789459892
+      "price": 3886.88,
+      "pct": 0.58,
+      "ts": 1789538702
     },
     "1.000300": {
       "name": "沪深300",
-      "price": 4450.04,
-      "pct": -0.67,
-      "ts": 1789459904
+      "price": 4472.76,
+      "pct": 0.51,
+      "ts": 1789538700
     },
     "0.399006": {
       "name": "创业板指",
-      "price": 3247.92,
-      "pct": -1.15,
-      "ts": 1789459920
+      "price": 3300.77,
+      "pct": 1.63,
+      "ts": 1789538700
     },
     "1.512480": {
       "name": "半导体ETF国联安",
-      "price": 0.964,
-      "pct": 1.8,
-      "ts": 1789459893
+      "price": 1.004,
+      "pct": 4.15,
+      "ts": 1789538701
     },
     "1.588000": {
       "name": "科创50ETF华夏",
-      "price": 1.638,
-      "pct": 1.55,
-      "ts": 1789459918
+      "price": 1.698,
+      "pct": 3.66,
+      "ts": 1789538701
     }
   },
   "funds": [
@@ -56,7 +56,7 @@
       "profit_pct": -11.09,
       "to_breakeven_pct": 12.48,
       "profit_acc_pct": -11.09,
-      "est_pct": 1.8,
+      "est_pct": 4.15,
       "board_name": "半导体ETF国联安",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -2.06,
@@ -84,7 +84,7 @@
       "profit_pct": -2.03,
       "to_breakeven_pct": 2.08,
       "profit_acc_pct": -2.03,
-      "est_pct": -0.67,
+      "est_pct": 0.51,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -2.8,
@@ -101,22 +101,22 @@
     {
       "code": "027208",
       "name": "路博迈卓越优选混合C",
-      "latest_nav": 0.8825,
-      "latest_acc": 0.8825,
-      "latest_date": "2026-09-14",
+      "latest_nav": 0.8777,
+      "latest_acc": 0.8777,
+      "latest_date": "2026-09-15",
       "source": "东方财富",
       "shares": 20005.44,
       "cost_nav": 0.9997,
       "invested": 20000,
-      "market_value": 17654.8,
-      "profit_pct": -11.73,
-      "to_breakeven_pct": 13.28,
-      "profit_acc_pct": -11.73,
-      "est_pct": -0.67,
+      "market_value": 17558.77,
+      "profit_pct": -12.21,
+      "to_breakeven_pct": 13.9,
+      "profit_acc_pct": -12.21,
+      "est_pct": 0.51,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
-      "trend_5d": -2.84,
-      "trend_20d": -3.75,
+      "trend_5d": -4.19,
+      "trend_20d": -3.23,
       "trend_60d": null,
       "eva": {
         "index": "SH000300",
@@ -140,7 +140,7 @@
       "profit_pct": -25.77,
       "to_breakeven_pct": 34.71,
       "profit_acc_pct": -25.77,
-      "est_pct": 1.55,
+      "est_pct": 3.66,
       "board_name": "科创50ETF华夏",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -1.44,
