@@ -1,7 +1,7 @@
 {
   "meta": {
     "date": "2026-09-16",
-    "fetch_time": "14:05:11",
+    "fetch_time": "14:11:11",
     "market_open": true,
     "open_reason": "开市",
     "force": false
@@ -12,33 +12,33 @@
   "board": {
     "1.000001": {
       "name": "上证指数",
-      "price": 3886.88,
-      "pct": 0.58,
-      "ts": 1789538702
+      "price": 3890.29,
+      "pct": 0.67,
+      "ts": 1789539030
     },
     "1.000300": {
       "name": "沪深300",
-      "price": 4472.76,
-      "pct": 0.51,
-      "ts": 1789538700
+      "price": 4477.0,
+      "pct": 0.61,
+      "ts": 1789539030
     },
     "0.399006": {
       "name": "创业板指",
-      "price": 3300.77,
-      "pct": 1.63,
-      "ts": 1789538700
+      "price": 3305.01,
+      "pct": 1.76,
+      "ts": 1789539027
     },
     "1.512480": {
       "name": "半导体ETF国联安",
       "price": 1.004,
       "pct": 4.15,
-      "ts": 1789538701
+      "ts": 1789539028
     },
     "1.588000": {
       "name": "科创50ETF华夏",
-      "price": 1.698,
-      "pct": 3.66,
-      "ts": 1789538701
+      "price": 1.702,
+      "pct": 3.91,
+      "ts": 1789539028
     }
   },
   "funds": [
@@ -84,7 +84,7 @@
       "profit_pct": -2.03,
       "to_breakeven_pct": 2.08,
       "profit_acc_pct": -2.03,
-      "est_pct": 0.51,
+      "est_pct": 0.61,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -2.8,
@@ -112,7 +112,7 @@
       "profit_pct": -12.21,
       "to_breakeven_pct": 13.9,
       "profit_acc_pct": -12.21,
-      "est_pct": 0.51,
+      "est_pct": 0.61,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -4.19,
@@ -140,7 +140,7 @@
       "profit_pct": -25.77,
       "to_breakeven_pct": 34.71,
       "profit_acc_pct": -25.77,
-      "est_pct": 3.66,
+      "est_pct": 3.91,
       "board_name": "科创50ETF华夏",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -1.44,
