@@ -1,7 +1,7 @@
 {
   "meta": {
     "date": "2026-09-18",
-    "fetch_time": "14:11:22",
+    "fetch_time": "19:28:19",
     "market_open": true,
     "open_reason": "开市",
     "force": false
@@ -12,33 +12,33 @@
   "board": {
     "1.000001": {
       "name": "上证指数",
-      "price": 3910.95,
-      "pct": 0.91,
-      "ts": 1789711848
+      "price": 3911.87,
+      "pct": 0.94,
+      "ts": 1789719092
     },
     "1.000300": {
       "name": "沪深300",
-      "price": 4506.67,
-      "pct": 1.04,
-      "ts": 1789711848
+      "price": 4507.39,
+      "pct": 1.06,
+      "ts": 1789719104
     },
     "0.399006": {
       "name": "创业板指",
-      "price": 3366.45,
-      "pct": 2.07,
-      "ts": 1789711848
+      "price": 3372.68,
+      "pct": 2.25,
+      "ts": 1789719093
     },
     "1.512480": {
       "name": "半导体ETF国联安",
-      "price": 1.039,
-      "pct": 3.8,
-      "ts": 1789711849
+      "price": 1.041,
+      "pct": 4.0,
+      "ts": 1789719094
     },
     "1.588000": {
       "name": "科创50ETF华夏",
-      "price": 1.743,
-      "pct": 2.77,
-      "ts": 1789711850
+      "price": 1.744,
+      "pct": 2.83,
+      "ts": 1789719101
     }
   },
   "funds": [
@@ -56,7 +56,7 @@
       "profit_pct": -7.8,
       "to_breakeven_pct": 8.46,
       "profit_acc_pct": -7.8,
-      "est_pct": 3.8,
+      "est_pct": 4.0,
       "board_name": "半导体ETF国联安",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 2.29,
@@ -65,9 +65,9 @@
       "eva": {
         "index": "CSI930652",
         "index_name": "中证电子",
-        "pe_percentile": 0.7736,
-        "pb_percentile": 0.9644,
-        "level": "偏高估"
+        "pe_percentile": 0.8004,
+        "pb_percentile": 0.9696,
+        "level": "极度高估"
       }
     },
     {
@@ -84,7 +84,7 @@
       "profit_pct": 0.06,
       "to_breakeven_pct": -0.06,
       "profit_acc_pct": 0.06,
-      "est_pct": 1.04,
+      "est_pct": 1.06,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 0.06,
@@ -93,8 +93,8 @@
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.6376,
-        "pb_percentile": 0.366,
+        "pe_percentile": 0.6508,
+        "pb_percentile": 0.3828,
         "level": "偏高估"
       }
     },
@@ -112,7 +112,7 @@
       "profit_pct": -11.15,
       "to_breakeven_pct": 12.54,
       "profit_acc_pct": -11.15,
-      "est_pct": 1.04,
+      "est_pct": 1.06,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -2.19,
@@ -121,8 +121,8 @@
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.6376,
-        "pb_percentile": 0.366,
+        "pe_percentile": 0.6508,
+        "pb_percentile": 0.3828,
         "level": "偏高估"
       }
     },
@@ -140,7 +140,7 @@
       "profit_pct": -23.71,
       "to_breakeven_pct": 31.08,
       "profit_acc_pct": -23.71,
-      "est_pct": 2.77,
+      "est_pct": 2.83,
       "board_name": "科创50ETF华夏",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 2.27,
@@ -149,9 +149,9 @@
       "eva": {
         "index": "SH000688",
         "index_name": "科创50",
-        "pe_percentile": 0.7939,
-        "pb_percentile": 0.9012,
-        "level": "偏高估"
+        "pe_percentile": 0.8013,
+        "pb_percentile": 0.9381,
+        "level": "极度高估"
       }
     }
   ],
