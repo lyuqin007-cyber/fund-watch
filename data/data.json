@@ -1,46 +1,15 @@
 {
   "meta": {
     "date": "2026-09-23",
-    "fetch_time": "14:11:14",
+    "fetch_time": "19:51:00",
     "market_open": true,
-    "open_reason": "开市",
+    "open_reason": "开市（行情时间戳缺失，按工作日处理）",
     "force": false
   },
   "reserve_fund": 70000,
   "goal": "回本退场",
   "spare_cash_note": "预留补仓资金7万=生意备用金，随时可能动用；平时放货币基金/短债基金，补仓信号触发时取用",
-  "board": {
-    "1.000001": {
-      "name": "上证指数",
-      "price": 3939.47,
-      "pct": -0.32,
-      "ts": 1790143831
-    },
-    "1.000300": {
-      "name": "沪深300",
-      "price": 4520.77,
-      "pct": -0.52,
-      "ts": 1790143830
-    },
-    "0.399006": {
-      "name": "创业板指",
-      "price": 3380.73,
-      "pct": -0.56,
-      "ts": 1790143830
-    },
-    "1.512480": {
-      "name": "半导体ETF国联安",
-      "price": 1.051,
-      "pct": 0.0,
-      "ts": 1790143830
-    },
-    "1.588000": {
-      "name": "科创50ETF华夏",
-      "price": 1.756,
-      "pct": -0.11,
-      "ts": 1790143829
-    }
-  },
+  "board": {},
   "funds": [
     {
       "code": "020477",
@@ -56,45 +25,41 @@
       "profit_pct": -3.48,
       "to_breakeven_pct": 3.6,
       "profit_acc_pct": -3.48,
-      "est_pct": 0.0,
-      "board_name": "半导体ETF国联安",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": 8.57,
       "trend_20d": 5.7,
       "trend_60d": -24.35,
       "eva": {
         "index": "CSI930652",
         "index_name": "中证电子",
-        "pe_percentile": 0.8104,
-        "pb_percentile": 0.9708,
+        "pe_percentile": 0.8052,
+        "pb_percentile": 0.9696,
         "level": "极度高估"
       }
     },
     {
       "code": "016467",
       "name": "国泰海通量化选股混合发起C",
-      "latest_nav": 1.6301,
-      "latest_acc": 1.6301,
-      "latest_date": "2026-09-22",
+      "latest_nav": 1.6307,
+      "latest_acc": 1.6307,
+      "latest_date": "2026-09-23",
       "source": "东方财富",
       "shares": 19043.57,
       "cost_nav": 1.5753,
       "invested": 30000,
-      "market_value": 31042.92,
-      "profit_pct": 3.48,
-      "to_breakeven_pct": -3.36,
-      "profit_acc_pct": 3.48,
-      "est_pct": -0.52,
-      "board_name": "沪深300",
-      "est_method": "板块ETF实时涨跌",
-      "trend_5d": 5.62,
-      "trend_20d": 3.97,
-      "trend_60d": -8.07,
+      "market_value": 31054.35,
+      "profit_pct": 3.51,
+      "to_breakeven_pct": -3.4,
+      "profit_acc_pct": 3.51,
+      "est_pct": null,
+      "trend_5d": 3.35,
+      "trend_20d": 3.95,
+      "trend_60d": -8.38,
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.674,
-        "pb_percentile": 0.4156,
+        "pe_percentile": 0.6552,
+        "pb_percentile": 0.3932,
         "level": "偏高估"
       }
     },
@@ -112,17 +77,15 @@
       "profit_pct": -8.85,
       "to_breakeven_pct": 9.7,
       "profit_acc_pct": -8.85,
-      "est_pct": -0.52,
-      "board_name": "沪深300",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": 3.83,
       "trend_20d": 3.02,
       "trend_60d": null,
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.674,
-        "pb_percentile": 0.4156,
+        "pe_percentile": 0.6552,
+        "pb_percentile": 0.3932,
         "level": "偏高估"
       }
     },
@@ -140,20 +103,24 @@
       "profit_pct": -21.14,
       "to_breakeven_pct": 26.81,
       "profit_acc_pct": -21.14,
-      "est_pct": -0.11,
-      "board_name": "科创50ETF华夏",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": 6.24,
       "trend_20d": 5.97,
       "trend_60d": -23.76,
       "eva": {
         "index": "SH000688",
         "index_name": "科创50",
-        "pe_percentile": 0.8065,
-        "pb_percentile": 0.9437,
+        "pe_percentile": 0.8017,
+        "pb_percentile": 0.937,
         "level": "极度高估"
       }
     }
   ],
-  "warnings": []
+  "warnings": [
+    "大盘行情获取失败",
+    "基金020477：板块ETF(1.512480)行情缺失，今日估算涨跌不可用",
+    "基金016467：板块ETF(1.000300)行情缺失，今日估算涨跌不可用",
+    "基金027208：板块ETF(1.000300)行情缺失，今日估算涨跌不可用",
+    "基金019702：板块ETF(1.588000)行情缺失，今日估算涨跌不可用"
+  ]
 }
