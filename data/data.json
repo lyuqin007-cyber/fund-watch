@@ -1,9 +1,9 @@
 {
   "meta": {
-    "date": "2026-09-25",
-    "fetch_time": "19:59:59",
-    "market_open": false,
-    "open_reason": "今日无行情（法定节假日休市）",
+    "date": "2026-09-28",
+    "fetch_time": "14:11:10",
+    "market_open": true,
+    "open_reason": "开市",
     "force": false
   },
   "reserve_fund": 70000,
@@ -12,33 +12,33 @@
   "board": {
     "1.000001": {
       "name": "上证指数",
-      "price": 3888.37,
-      "pct": -1.22,
-      "ts": 1790237520
+      "price": 3826.39,
+      "pct": -1.59,
+      "ts": 1790575833
     },
     "1.000300": {
       "name": "沪深300",
-      "price": 4439.14,
-      "pct": -1.73,
-      "ts": 1790237502
+      "price": 4346.38,
+      "pct": -2.09,
+      "ts": 1790575833
     },
     "0.399006": {
       "name": "创业板指",
-      "price": 3288.95,
-      "pct": -2.68,
-      "ts": 1790237487
+      "price": 3154.27,
+      "pct": -4.09,
+      "ts": 1790575833
     },
     "1.512480": {
       "name": "半导体ETF国联安",
-      "price": 1.023,
-      "pct": -2.66,
-      "ts": 1790237512
+      "price": 0.987,
+      "pct": -3.52,
+      "ts": 1790575834
     },
     "1.588000": {
       "name": "科创50ETF华夏",
-      "price": 1.713,
-      "pct": -2.39,
-      "ts": 1790237516
+      "price": 1.653,
+      "pct": -3.5,
+      "ts": 1790575832
     }
   },
   "funds": [
@@ -56,7 +56,7 @@
       "profit_pct": -5.68,
       "to_breakeven_pct": 6.02,
       "profit_acc_pct": -5.68,
-      "est_pct": -2.66,
+      "est_pct": -3.52,
       "board_name": "半导体ETF国联安",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 2.3,
@@ -84,7 +84,7 @@
       "profit_pct": 1.5,
       "to_breakeven_pct": -1.48,
       "profit_acc_pct": 1.5,
-      "est_pct": -1.73,
+      "est_pct": -2.09,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 1.44,
@@ -112,7 +112,7 @@
       "profit_pct": -12.11,
       "to_breakeven_pct": 13.77,
       "profit_acc_pct": -12.11,
-      "est_pct": -1.73,
+      "est_pct": -2.09,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -1.08,
@@ -140,7 +140,7 @@
       "profit_pct": -23.57,
       "to_breakeven_pct": 30.84,
       "profit_acc_pct": -23.57,
-      "est_pct": -2.39,
+      "est_pct": -3.5,
       "board_name": "科创50ETF华夏",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": 0.18,
