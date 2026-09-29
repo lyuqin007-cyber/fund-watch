@@ -1,46 +1,15 @@
 {
   "meta": {
-    "date": "2026-09-28",
-    "fetch_time": "22:11:20",
+    "date": "2026-09-29",
+    "fetch_time": "14:11:42",
     "market_open": true,
-    "open_reason": "开市",
+    "open_reason": "开市（行情时间戳缺失，按工作日处理）",
     "force": false
   },
   "reserve_fund": 70000,
   "goal": "回本退场",
   "spare_cash_note": "预留补仓资金7万=生意备用金，随时可能动用；平时放货币基金/短债基金，补仓信号触发时取用",
-  "board": {
-    "1.000001": {
-      "name": "上证指数",
-      "price": 3823.62,
-      "pct": -1.67,
-      "ts": 1790583120
-    },
-    "1.000300": {
-      "name": "沪深300",
-      "price": 4340.76,
-      "pct": -2.22,
-      "ts": 1790583102
-    },
-    "0.399006": {
-      "name": "创业板指",
-      "price": 3139.82,
-      "pct": -4.53,
-      "ts": 1790583066
-    },
-    "1.512480": {
-      "name": "半导体ETF国联安",
-      "price": 0.98,
-      "pct": -4.2,
-      "ts": 1790583115
-    },
-    "1.588000": {
-      "name": "科创50ETF华夏",
-      "price": 1.643,
-      "pct": -4.09,
-      "ts": 1790583119
-    }
-  },
+  "board": {},
   "funds": [
     {
       "code": "020477",
@@ -56,9 +25,7 @@
       "profit_pct": -9.48,
       "to_breakeven_pct": 10.47,
       "profit_acc_pct": -9.48,
-      "est_pct": -4.2,
-      "board_name": "半导体ETF国联安",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": -5.1,
       "trend_20d": -3.84,
       "trend_60d": -21.26,
@@ -84,9 +51,7 @@
       "profit_pct": -1.48,
       "to_breakeven_pct": 1.5,
       "profit_acc_pct": -1.48,
-      "est_pct": -2.22,
-      "board_name": "沪深300",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": -3.28,
       "trend_20d": -2.37,
       "trend_60d": -10.94,
@@ -112,9 +77,7 @@
       "profit_pct": -14.74,
       "to_breakeven_pct": 17.28,
       "profit_acc_pct": -14.74,
-      "est_pct": -2.22,
-      "board_name": "沪深300",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": -5.57,
       "trend_20d": -7.67,
       "trend_60d": null,
@@ -140,9 +103,7 @@
       "profit_pct": -27.66,
       "to_breakeven_pct": 38.23,
       "profit_acc_pct": -27.66,
-      "est_pct": -4.09,
-      "board_name": "科创50ETF华夏",
-      "est_method": "板块ETF实时涨跌",
+      "est_pct": null,
       "trend_5d": -8.19,
       "trend_20d": -4.85,
       "trend_60d": -24.86,
@@ -155,5 +116,11 @@
       }
     }
   ],
-  "warnings": []
+  "warnings": [
+    "大盘行情获取失败",
+    "基金020477：板块ETF(1.512480)行情缺失，今日估算涨跌不可用",
+    "基金016467：板块ETF(1.000300)行情缺失，今日估算涨跌不可用",
+    "基金027208：板块ETF(1.000300)行情缺失，今日估算涨跌不可用",
+    "基金019702：板块ETF(1.588000)行情缺失，今日估算涨跌不可用"
+  ]
 }
