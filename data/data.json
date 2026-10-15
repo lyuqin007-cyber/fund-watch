@@ -1,7 +1,7 @@
 {
   "meta": {
     "date": "2026-10-15",
-    "fetch_time": "14:05:14",
+    "fetch_time": "19:43:53",
     "market_open": true,
     "open_reason": "开市",
     "force": false
@@ -12,89 +12,89 @@
   "board": {
     "1.000001": {
       "name": "上证指数",
-      "price": 3689.02,
-      "pct": -2.08,
-      "ts": 1792044300
+      "price": 3707.48,
+      "pct": -1.59,
+      "ts": 1792051920
     },
     "1.000300": {
       "name": "沪深300",
-      "price": 4131.75,
-      "pct": -2.04,
-      "ts": 1792044300
+      "price": 4166.01,
+      "pct": -1.23,
+      "ts": 1792051902
     },
     "0.399006": {
       "name": "创业板指",
-      "price": 2764.55,
-      "pct": -3.57,
-      "ts": 1792044300
+      "price": 2783.17,
+      "pct": -2.92,
+      "ts": 1792051869
     },
     "1.512480": {
       "name": "半导体ETF国联安",
-      "price": 0.83,
-      "pct": -3.26,
-      "ts": 1792044301
+      "price": 0.84,
+      "pct": -2.1,
+      "ts": 1792051921
     },
     "1.588000": {
       "name": "科创50ETF华夏",
-      "price": 1.417,
-      "pct": -2.81,
-      "ts": 1792044302
+      "price": 1.438,
+      "pct": -1.37,
+      "ts": 1792051898
     }
   },
   "funds": [
     {
       "code": "020477",
       "name": "泰康半导体量化选股股票发起式C",
-      "latest_nav": 2.6706,
-      "latest_acc": 2.6706,
-      "latest_date": "2026-10-14",
+      "latest_nav": 2.6194,
+      "latest_acc": 2.6194,
+      "latest_date": "2026-10-15",
       "source": "东方财富",
       "shares": 52435.48,
       "cost_nav": 3.3374,
       "invested": 175000,
-      "market_value": 140034.19,
-      "profit_pct": -19.98,
-      "to_breakeven_pct": 24.97,
-      "profit_acc_pct": -19.98,
-      "est_pct": -3.26,
+      "market_value": 137349.5,
+      "profit_pct": -21.51,
+      "to_breakeven_pct": 27.41,
+      "profit_acc_pct": -21.51,
+      "est_pct": -2.1,
       "board_name": "半导体ETF国联安",
       "est_method": "板块ETF实时涨跌",
-      "trend_5d": -9.47,
-      "trend_20d": -11.85,
-      "trend_60d": -29.65,
+      "trend_5d": -7.29,
+      "trend_20d": -13.33,
+      "trend_60d": -27.63,
       "eva": {
         "index": "CSI930652",
         "index_name": "中证电子",
-        "pe_percentile": 0.528,
-        "pb_percentile": 0.882,
+        "pe_percentile": 0.4628,
+        "pb_percentile": 0.8664,
         "level": "合理"
       }
     },
     {
       "code": "016467",
       "name": "国泰海通量化选股混合发起C",
-      "latest_nav": 1.4761,
-      "latest_acc": 1.4761,
-      "latest_date": "2026-10-14",
+      "latest_nav": 1.4344,
+      "latest_acc": 1.4344,
+      "latest_date": "2026-10-15",
       "source": "东方财富",
       "shares": 19043.57,
       "cost_nav": 1.5753,
       "invested": 30000,
-      "market_value": 28110.21,
-      "profit_pct": -6.3,
-      "to_breakeven_pct": 6.72,
-      "profit_acc_pct": -6.3,
-      "est_pct": -2.04,
+      "market_value": 27316.1,
+      "profit_pct": -8.95,
+      "to_breakeven_pct": 9.83,
+      "profit_acc_pct": -8.95,
+      "est_pct": -1.23,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
-      "trend_5d": -5.25,
-      "trend_20d": -7.03,
-      "trend_60d": -9.86,
+      "trend_5d": -5.92,
+      "trend_20d": -9.8,
+      "trend_60d": -11.74,
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.5788,
-        "pb_percentile": 0.3148,
+        "pe_percentile": 0.5532,
+        "pb_percentile": 0.2936,
         "level": "合理"
       }
     },
@@ -112,7 +112,7 @@
       "profit_pct": -20.1,
       "to_breakeven_pct": 25.15,
       "profit_acc_pct": -20.1,
-      "est_pct": -2.04,
+      "est_pct": -1.23,
       "board_name": "沪深300",
       "est_method": "板块ETF实时涨跌",
       "trend_5d": -6.61,
@@ -121,36 +121,36 @@
       "eva": {
         "index": "SH000300",
         "index_name": "沪深300",
-        "pe_percentile": 0.5788,
-        "pb_percentile": 0.3148,
+        "pe_percentile": 0.5532,
+        "pb_percentile": 0.2936,
         "level": "合理"
       }
     },
     {
       "code": "019702",
       "name": "易方达上证科创板成长ETF联接发起式A",
-      "latest_nav": 2.2868,
-      "latest_acc": 2.2868,
-      "latest_date": "2026-10-14",
+      "latest_nav": 2.1984,
+      "latest_acc": 2.1984,
+      "latest_date": "2026-10-15",
       "source": "东方财富",
       "shares": 5583.81,
       "cost_nav": 3.6534,
       "invested": 20400,
-      "market_value": 12769.06,
-      "profit_pct": -37.41,
-      "to_breakeven_pct": 59.76,
-      "profit_acc_pct": -37.41,
-      "est_pct": -2.81,
+      "market_value": 12275.45,
+      "profit_pct": -39.83,
+      "to_breakeven_pct": 66.19,
+      "profit_acc_pct": -39.83,
+      "est_pct": -1.37,
       "board_name": "科创50ETF华夏",
       "est_method": "板块ETF实时涨跌",
-      "trend_5d": -13.22,
-      "trend_20d": -16.89,
-      "trend_60d": -30.66,
+      "trend_5d": -10.37,
+      "trend_20d": -19.72,
+      "trend_60d": -30.32,
       "eva": {
         "index": "SH000688",
         "index_name": "科创50",
-        "pe_percentile": 0.7778,
-        "pb_percentile": 0.6914,
+        "pe_percentile": 0.7768,
+        "pb_percentile": 0.6715,
         "level": "偏高估"
       }
     }
