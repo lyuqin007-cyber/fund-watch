@@ -25,6 +25,9 @@ permissions:
 
 jobs:
   report:
+    # 【2026-10-21 停发保险】只有手动勾选 force 时才执行；
+    # 外部闹钟 cron-job.org 的自动触发不传 force → 直接跳过，不会再发微信。
+    if: github.event.inputs.force == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
