@@ -54,6 +54,14 @@ def build_system_prompt(data):
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     taught = load_taught_topics()
     taught_text = "、".join(taught) if taught else "（无，所有主题均可选）"
+    deep = data["meta"].get("deep_search") or {}
+    if deep.get("enabled"):
+        deep_text = (f"【今日启用深度搜索】触发原因：{deep.get('reason')}。"
+                     "数据部分已附「深度新闻搜索」结果（东财新闻库按关键词检索）。"
+                     "请基于这些新闻写报告「深度消息」一节（80~150字小结，标注新闻日期）。"
+                     "搜索结果不足时如实说明，不编造。")
+    else:
+        deep_text = "【今日不启用深度搜索】报告不出现「深度消息」一节，只用提供的数据分析。"
     replacements = {
         "{TAUGHT_TOPICS}": taught_text,
         "{GOAL}": str(data.get("goal") or "回本退场"),
@@ -61,6 +69,7 @@ def build_system_prompt(data):
         "{DATE}": data["meta"]["date"],
         "{DATA_TIME}": str(data["meta"].get("fetch_time") or "14:10")[:5],
         "{SPARE_CASH_NOTE}": str(data.get("spare_cash_note") or "未配置"),
+        "{DEEP_SEARCH_INSTRUCTION}": deep_text,
     }
     for key, value in replacements.items():
         template = template.replace(key, value)
@@ -77,7 +86,12 @@ def build_user_prompt(data):
     if board:
         for secid, b in board.items():
             sign = "+" if (b.get("pct") or 0) >= 0 else ""
-            lines.append(f"- {b['name']}（{secid}）：{b['price']}，{sign}{b['pct']}%")
+            line = f"- {b['name']}（{secid}）：{b['price']}，{sign}{b['pct']}%"
+            if b.get("main_net_inflow") is not None:
+                yi = b["main_net_inflow"] / 1e8
+                line += (f"，主力净流入 {yi:+.2f} 亿"
+                         f"（占比 {b.get('main_net_inflow_pct')}%）")
+            lines.append(line)
     else:
         lines.append("- 行情数据缺失")
     # 持仓
@@ -118,7 +132,37 @@ def build_user_prompt(data):
         if f.get("profit_pct") is not None:
             drop = -f["profit_pct"]
             parts.append(f"距成本跌幅 {round(drop, 2)}%")
+        # 行业信号：板块ETF近5/20日趋势
+        bh = f.get("board_hist")
+        if bh:
+            c5 = bh.get("c5")
+            c20 = bh.get("c20")
+            if c5 is not None and c20 is not None:
+                parts.append(f"板块ETF近5日 {c5}%/近20日 {c20}%")
+            elif c5 is not None or c20 is not None:
+                parts.append(f"板块ETF近5日 {c5}%/近20日 {c20}%（部分缺失）")
+        # 基金体检：同类排名
+        rk = f.get("rank")
+        if rk:
+            bits = "、".join(f"{k}涨幅 {v}%（同类前 {rk['percentiles'].get(k, '?')}%）"
+                             for k, v in rk.get("returns", {}).items())
+            peer = rk.get("peer_total")
+            parts.append(f"同类排名（同类约{peer}只）：{bits}")
         lines.append("- " + "｜".join(parts))
+    # 行业快讯
+    news = data.get("news") or []
+    if news:
+        lines.append("\n【今日相关快讯（标题+时间）】")
+        for n in news[:8]:
+            lines.append(f"- [{n['time']}] {n['title']}")
+    # 深度新闻搜索（深查日）
+    deep_news = data.get("deep_news") or {}
+    if deep_news:
+        lines.append("\n【深度新闻搜索（东财新闻库按关键词检索，深查日专用）】")
+        for kw, items in deep_news.items():
+            lines.append(f"- 关键词「{kw}」：")
+            for n in items[:5]:
+                lines.append(f"  [{n['date']}] {n['title']}｜{n['summary']}")
     # 配置信息
     lines.append(f"\n【用户配置】目标：{data.get('goal')}；预留补仓资金：{data.get('reserve_fund')} 元。")
     # 数据警告
@@ -132,30 +176,45 @@ def build_user_prompt(data):
 
 # ---------------- AI 调用 ----------------
 def report_complete(text):
-    """结构完整性检查：必须含小课堂且以免责声明结尾（防代理截断）"""
+    """结构完整性检查：必须含小课堂且以免责声明结尾（防代理截断）。
+    先删掉结尾的 <!--TOPIC:...--> 标记再检查（模板里标记在免责声明之后）"""
+    stripped = re.sub(r"<!--TOPIC:.*?-->", "", text).rstrip()
     return ("今日小课堂" in text
-            and text.rstrip().endswith("本报告由程序自动生成，仅供参考，不构成投资建议。"))
+            and stripped.endswith("本报告由程序自动生成，仅供参考，不构成投资建议。"))
 
 
-def call_ai(system, user):
-    """调用 Claude Sonnet 5。注意：不传 temperature、不用 prefill（会报400）"""
+def _extract_text(resp):
+    """安全提取文本：跳过 thinking 等无 text 属性的块（中转偶发返回思考块）"""
+    parts = []
+    for block in resp.content:
+        if getattr(block, "type", "") == "text":
+            parts.append(getattr(block, "text", "") or "")
+    return "".join(parts)
+
+
+def _call_with_tools(system, user, tools):
+    """带工具列表调用（tools 为 None 表示不带工具）。成功返回完整文本，失败返回 None"""
     import anthropic
-    client = anthropic.Anthropic(timeout=60.0, max_retries=3)
+    client = anthropic.Anthropic(timeout=90.0, max_retries=3)
     last_text = ""
     for attempt in range(4):          # 代理偶发断连/截断：整体重试4次，逐次延长等待
-        for max_tokens in (2500, 4000):   # 若截断，加大上限再试一次
+        for max_tokens in (4000, 8000):   # 若截断，加大上限再试一次
             try:
-                resp = client.messages.create(
+                kwargs = dict(
                     model=MODEL,
                     max_tokens=max_tokens,
                     system=system,
                     messages=[{"role": "user", "content": user}],
-                    output_config={"effort": "medium"},
+                    # 禁用思考块：中转默认返回 thinking 会吃掉 max_tokens 额度导致截断
+                    output_config={"thinking": {"type": "disabled"}},
                 )
+                if tools:
+                    kwargs["tools"] = tools
+                resp = client.messages.create(**kwargs)
             except Exception:
                 time.sleep(2)
                 continue              # 连接错误等：不直接放弃，换下一轮重试
-            text = "".join(block.text for block in resp.content if block.type == "text")
+            text = _extract_text(resp)
             if text.strip():
                 last_text = text
             if resp.stop_reason != "max_tokens":
@@ -165,7 +224,13 @@ def call_ai(system, user):
         time.sleep(2 + 3 * attempt)
     if last_text.strip() and report_complete(last_text):
         return last_text
-    raise RuntimeError("AI 返回空内容或内容不完整（疑似截断），已重试4次")
+    return None
+
+
+def call_ai(system, user):
+    """调用 Claude Sonnet 5。注意：不传 temperature、不用 prefill（会报400）。
+    深查数据由 fetch 层预抓进提示词，AI 本身不需要联网工具。"""
+    return _call_with_tools(system, user, None)
 
 
 def generate_report(data, dry_run=False):

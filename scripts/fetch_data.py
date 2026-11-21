@@ -13,6 +13,7 @@ import os
 import re
 import sys
 import time
+import urllib.parse
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -214,7 +215,8 @@ def fetch_board(secids, warnings):
                         "ut": "fa5fd1943c7b386f172d6893dbfba10b",
                         "invt": "2", "dect": "1",
                         "secids": ",".join(secids),
-                        "fields": "f2,f3,f4,f12,f13,f14,f124",
+                        # f62=主力净流入额(元) f184=主力净流入占比(%)，用于"大钱在买还是卖"
+                        "fields": "f2,f3,f4,f12,f13,f14,f124,f62,f184",
                     })
     board = {}
     if resp is None:
@@ -235,6 +237,8 @@ def fetch_board(secids, warnings):
                 "price": item["f2"],
                 "pct": item["f3"],
                 "ts": item.get("f124"),  # 行情时间戳（秒），用于休市判断
+                "main_net_inflow": item.get("f62"),       # 主力净流入额（元）
+                "main_net_inflow_pct": item.get("f184"),  # 主力净流入占比（%）
             }
         except (KeyError, TypeError):
             continue
@@ -267,6 +271,196 @@ def fetch_eva(warnings):
         except (KeyError, TypeError):
             continue
     return eva or None
+
+
+# ---------------- 新增：行业快讯（AKShare 东财全球快讯，免费） ----------------
+NEWS_KEYS = ["半导体", "芯片", "存储", "算力", "AI", "人工智能", "科创", "科技",
+             "国产替代", "出口管制", "关税", "央行", "降准", "降息", "证监会",
+             "政策", "股市", "A股", "基金", "光模块"]
+
+
+def fetch_news(warnings):
+    """抓当日财经快讯标题（与持仓行业相关的）。返回 [{time,title,summary}]；失败返回 []"""
+    try:
+        import akshare as ak
+        df = ak.stock_news_global_em()
+    except Exception as exc:
+        warnings.append(f"快讯获取失败（{type(exc).__name__}）")
+        return []
+    if df is None or getattr(df, "empty", True):
+        warnings.append("快讯接口返回空数据")
+        return []
+    out = []
+    for _, row in df.head(300).iterrows():
+        title = str(row.get("标题") or "")
+        if not title or not any(k in title for k in NEWS_KEYS):
+            continue
+        out.append({
+            "time": str(row.get("发布时间") or "")[11:16],
+            "title": title,
+            "summary": str(row.get("摘要") or "").strip()[:80],
+        })
+        if len(out) >= 8:
+            break
+    return out
+
+
+# ---------------- 新增：板块 ETF 历史 K 线（东财 push2his，备源 AKShare） ----------------
+def fetch_board_hist(secid, n=25):
+    """板块ETF近n个交易日K线。主源东财 push2his；失败用 AKShare fund_etf_hist_em 兜底。
+    返回 [(date, close)]；失败返回 []"""
+    resp = http_get("https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                    referer="https://quote.eastmoney.com/",
+                    params={
+                        "secid": secid, "fields1": "f1,f2,f3",
+                        "fields2": "f51,f53", "klt": "101", "fqt": "1",
+                        "end": "20500101", "lmt": str(n),
+                    })
+    if resp is not None:
+        try:
+            klines = resp.json()["data"]["klines"]
+            if klines:
+                return [tuple(k.split(",")) for k in klines]
+        except (ValueError, KeyError, TypeError):
+            pass
+    # 备源：AKShare 拉该ETF日线
+    code = secid.split(".")[-1]
+    try:
+        import akshare as ak
+        df = ak.fund_etf_hist_em(symbol=code, period="daily", adjust="")
+        if df is not None and not df.empty:
+            return [(str(d.date()), float(c)) for d, c in zip(df["日期"], df["收盘"])][-n:]
+    except Exception:
+        pass
+    return []
+
+
+def board_hist_trend(klines):
+    """K线 → 近5日/近20日涨跌%（按收盘价）。数据不足返回 None"""
+    closes = []
+    for date_str, close in klines:
+        try:
+            closes.append(float(close))
+        except (TypeError, ValueError):
+            continue
+    def chg(days):
+        if len(closes) >= days + 1 and closes[-1 - days]:
+            return round((closes[-1] / closes[-1 - days] - 1) * 100, 2)
+        return None
+    return {"c5": chg(5), "c20": chg(20), "last_date": klines[-1][0] if klines else None}
+
+
+# ---------------- 新增：同类基金排名（AKShare 雪球业绩接口，免费） ----------------
+RANK_PERIODS = ["近1月", "近3月", "近6月", "近1年", "今年以来"]
+
+
+def fetch_fund_rank(code, warnings):
+    """雪球基金业绩接口：自带"周期收益同类排名"（名次/总数）。
+    返回 {"percentiles":{期:同类前百分之几},"returns":{期:涨幅%},"peer_total":同类总数}；失败返回 None"""
+    try:
+        import akshare as ak
+        df = ak.fund_individual_achievement_xq(symbol=str(code))
+    except Exception as exc:
+        warnings.append(f"基金{code}：同类排名获取失败（{type(exc).__name__}）")
+        return None
+    if df is None or getattr(df, "empty", True):
+        warnings.append(f"基金{code}：同类排名返回空数据")
+        return None
+    by_period = {}
+    for _, row in df.iterrows():
+        by_period.setdefault(str(row.get("周期") or ""), row)
+    out = {"percentiles": {}, "returns": {}, "peer_total": None}
+    for period in RANK_PERIODS:
+        row = by_period.get(period)
+        if row is None:
+            continue
+        try:
+            out["returns"][period] = round(float(row["本产品区间收益"]), 2)
+        except (ValueError, TypeError):
+            continue
+        rank_str = str(row.get("周期收益同类排名") or "")
+        if "/" in rank_str:
+            try:
+                rank, total = (int(x) for x in rank_str.split("/", 1))
+                if total > 0:
+                    out["percentiles"][period] = round(rank / total * 100, 1)
+                    out["peer_total"] = total
+            except ValueError:
+                pass
+    return out if out.get("returns") else None
+
+
+# ---------------- 新增：是否触发联网深度搜索（每周五例行 + 异常日） ----------------
+def should_deep_search(board, funds_data):
+    """周五例行深查；或出现异常信号（半导体ETF单日≤-3%、任一持仓估算≤-4%）时深查"""
+    now = datetime.now(TZ_SH)
+    if now.weekday() == 4:
+        return True, "周五例行深度搜索"
+    for secid, b in board.items():
+        if secid == "1.512480" and (b.get("pct") or 0) <= -3:
+            return True, f"半导体ETF单日{b['pct']}%，触发异常深查"
+    for f in funds_data:
+        if f.get("est_pct") is not None and f["est_pct"] <= -4:
+            return True, f"{f.get('name')}估算跌{f['est_pct']}%，触发异常深查"
+    return False, "无异常信号"
+
+
+# ---------------- 新增：深度新闻搜索（东财新闻搜索，免费，替代付费联网搜索） ----------------
+DEEP_SEARCH_KEYWORDS = ["半导体 政策", "芯片 周期", "A股 科技 市场"]
+
+
+def _search_eastmoney(kw, retries=2):
+    """东财新闻搜索单次请求。注意：此接口对 requests 库返回空结果（实测），
+    必须用 urllib 直连才能拿到数据。返回文章列表或 None"""
+    param = json.dumps({
+        "uid": "", "keyword": kw, "type": ["cmsArticleWebOld"],
+        "client": "web", "clientType": "web", "clientVersion": "curr",
+        "param": {"cmsArticleWebOld": {"searchScope": "default", "sort": "default",
+                                       "pageIndex": 1, "pageSize": 5,
+                                       "preTag": "<em>", "postTag": "</em>"}},
+    }, ensure_ascii=False)
+    url = ("https://search-api-web.eastmoney.com/search/jsonp?cb=x&param="
+           + urllib.parse.quote(param))
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://so.eastmoney.com/",
+    })
+    for attempt in range(retries + 1):
+        try:
+            body = urllib.request.urlopen(req, timeout=15).read().decode("utf-8")
+            j = json.loads(body[body.index("(") + 1:body.rindex(")")])
+            arts = (j.get("result") or {}).get("cmsArticleWebOld")
+            return arts or []
+        except Exception:
+            if attempt < retries:
+                time.sleep(2 + attempt)
+    return None
+
+
+def fetch_news_search(warnings):
+    """深查日调用：按关键词搜东财新闻库，每词取前5条。
+    返回 {关键词: [{date,title,summary}]}；失败返回 {}"""
+    out = {}
+    for kw in DEEP_SEARCH_KEYWORDS:
+        arts = _search_eastmoney(kw)
+        if not arts:
+            continue
+        items = []
+        for a in arts:
+            try:
+                summary = re.sub(r"<[^>]+>", "", str(a.get("content") or ""))[:60]
+                items.append({
+                    "date": str(a.get("date") or "")[:10],
+                    "title": re.sub(r"<[^>]+>", "", str(a.get("title") or "")),
+                    "summary": summary,
+                })
+            except Exception:
+                continue
+        if items:
+            out[kw] = items
+    if not out:
+        warnings.append("深度新闻搜索失败（东财搜索接口无结果）")
+    return out
 
 
 # ---------------- 休市判断 ----------------
@@ -387,6 +581,13 @@ def build_fund_entry(f, board, eva, warnings):
     elif dj:
         entry["eva"] = None
         warnings.append(f"基金{code}：蛋卷接口无指数 {dj} 的估值数据")
+
+    # 板块 ETF 历史趋势（行业信号：该行业近5/20日涨跌）
+    if secid:
+        entry["board_hist"] = board_hist_trend(fetch_board_hist(secid))
+
+    # 同类基金排名（基金体检：它在同类里排什么位置）
+    entry["rank"] = fetch_fund_rank(code, warnings)
     return entry
 
 
@@ -407,6 +608,9 @@ def main():
     funds_data = [build_fund_entry(f, board, eva, warnings) for f in cfg.get("funds", [])]
 
     open_flag, open_reason = determine_open(board, funds_data, force)
+    deep_enabled, deep_reason = should_deep_search(board, funds_data)
+    news = fetch_news(warnings)
+    deep_news = fetch_news_search(warnings) if deep_enabled else {}
     now = datetime.now(TZ_SH)
     data = {
         "meta": {
@@ -415,11 +619,14 @@ def main():
             "market_open": open_flag,
             "open_reason": open_reason,
             "force": force,
+            "deep_search": {"enabled": deep_enabled, "reason": deep_reason},
         },
         "reserve_fund": cfg.get("reserve_fund"),
         "goal": cfg.get("goal"),
         "spare_cash_note": cfg.get("spare_cash_note"),
         "board": board,
+        "news": news,
+        "deep_news": deep_news,
         "funds": funds_data,
         "warnings": warnings,
     }

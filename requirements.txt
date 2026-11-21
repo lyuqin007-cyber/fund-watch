@@ -1,3 +1,4 @@
 requests>=2.31
 anthropic>=1.0
 tzdata>=2024.1
+akshare>=1.20
